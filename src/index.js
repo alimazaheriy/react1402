@@ -2,8 +2,15 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
+import {NewProducts} from "./NewProducts";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {Counter} from "./Counter";
-import {List} from "./List";
+import {Counters} from "./Counters";
+import {Home} from "./Home";
+import {CheckParams} from "./CheckParams";
+import {Songs} from "./Songs";
+
+
 
 
 
@@ -12,14 +19,21 @@ root.render(
 
     <>
 
-        <Counter  value={5} step={2} name="Counter1"/>
-        <br/>
-        <Counter  value={-10} name={"Counter2"}/>
-        <br/>
-        <Counter  step={5} name={"Counter3"}/>
+        <BrowserRouter>
+            <Routes>
+                <Route path={"/counter"} element={<Home><Counter/></Home>}/>
+                <Route path={"/counters"} element={<Home><Counters/></Home>}/>
+                <Route path={"/"} element={<Home/>}/>
+                <Route path={"/products/new"} element={<Home><NewProducts/></Home>}/>
+                <Route path={"/p/:id/:name"} element={<Home><CheckParams/></Home>}/>
+                <Route path={"/Player"} element={<Songs/>}/>
 
-        <List/>
+            </Routes>
+        </BrowserRouter>
+
     </>
+
+
 
 );
 

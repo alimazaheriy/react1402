@@ -1,0 +1,8 @@
+.yellow{
+    color: orange;
+    cursor: pointer;
+}
+
+.yellow:disabled{
+    cursor: default;
+}
