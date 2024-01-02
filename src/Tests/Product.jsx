@@ -1,6 +1,6 @@
 import {Component} from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import * as service from "./dataService";
+import * as service from "./Services/dataService";
 
 export class Product extends Component{
 

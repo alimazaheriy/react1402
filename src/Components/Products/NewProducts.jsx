@@ -1,8 +1,11 @@
 import {useState} from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Joi from 'joi';
-import {messages} from "./joi_translation";
+import {messages} from "./Services/joi_translation";
 import {useNavigate} from "react-router-dom";
+import {toast} from "react-toastify";
+import * as productService from "./Services/ProductService";
+import {fileSize} from "./Services/Constants";
 
 export const NewProducts=()=>{
 
@@ -12,9 +15,18 @@ export const NewProducts=()=>{
         price:0,
         discount:0,
         quantity:0,
-        image:'',
+        image:null,
         code:'',
         description:''
+    })
+
+    const [amar,setAmar]=useState({
+        progress:0,
+        remainingTime:0,
+        uploadSpeed:0,
+        elapsedTime:0,
+        loaded:0,
+        total:0
     })
 
     const updateValues=(e)=>{
@@ -26,7 +38,7 @@ export const NewProducts=()=>{
     }
     const navigate=useNavigate()
 
-    const save=(e)=>{
+    const save=async (e)=>{
         e.preventDefault();
 
         const validateResult=validate();
@@ -34,7 +46,17 @@ export const NewProducts=()=>{
             return
 
         //save
-        navigate('/counter',{replace:true})
+        try {
+            const result=await productService.newProduct(product,amar=>{
+                setAmar(amar);
+            })
+            const {data}=result;
+            toast.success(data.message);
+        }
+        catch (e)
+        {
+            toast.error('خطا در درج محصول')
+        }
     }
 
     const schema=Joi.object({
@@ -59,10 +81,8 @@ export const NewProducts=()=>{
             .required()
             .label('قیمت'),
         description:Joi.string()
-            .alphanum()
             .max(500)
             .required()
-            .label('توضیحات'),
     })
     const validate=()=>{
         const result=schema.validate(product,{abortEarly:false,allowUnknown:true,messages:messages,errors:{language:"fa"}})
@@ -77,6 +97,23 @@ export const NewProducts=()=>{
             setErrors(errorMessages);
         }
         return validate;
+    }
+
+    const onSelect=e=>{
+        const {files}=e.target;
+        if(files.length===0)
+            return;
+
+        const file=files[0];
+        console.log(file)
+        if(file.size>fileSize)
+        {
+            toast.error('File is too Big');
+            return;
+        }
+        const p={...product};
+        p.image=file;
+        setProduct(p);
     }
 
     const [errors,setErrors]=useState([]);
@@ -114,37 +151,61 @@ export const NewProducts=()=>{
                 <form method={"post"} onSubmit={save}>
                     <div className={"form-group"}>
                         <lable>Code:</lable>
-                        <input className={"form-control"} onInput={e=>updateValues(e)} type="text" name={"code"} value={product.code}/>
+                        <input className={"form-control"} onInput={e => updateValues(e)} type="text" name={"code"}
+                               value={product.code}/>
                         <small className={"text-danger"}>{get('code')}</small>
                     </div>
 
                     <div className={"form-group"}>
                         <lable>Name:</lable>
-                        <input className={"form-control"} onInput={e=>updateValues(e)} type="text" name={"name"} value={product.name}/>
+                        <input className={"form-control"} onInput={e => updateValues(e)} type="text" name={"name"}
+                               value={product.name}/>
                         <small className={"text-danger"}>{get('name')}</small>
                     </div>
 
                     <div className={"form-group"}>
                         <lable>Price:</lable>
-                        <input className={"form-control"} onInput={e=>updateValues(e)} type="number" name={"price"} value={product.price}/>
+                        <input className={"form-control"} onInput={e => updateValues(e)} type="number" name={"price"}
+                               value={product.price}/>
                     </div>
 
                     <div className={"form-group"}>
                         <lable>Discount:</lable>
-                        <input className={"form-control"} onInput={e=>updateValues(e)} type="number" name={"discount"} value={product.discount}/>
+                        <input className={"form-control"} onInput={e => updateValues(e)} type="number" name={"discount"}
+                               value={product.discount}/>
                     </div>
 
                     <div className={"form-group"}>
                         <lable>Quantity:</lable>
-                        <input className={"form-control"} onInput={e=>updateValues(e)} type="number" name={"quantity"} value={product.quantity}/>
+                        <input className={"form-control"} onInput={e => updateValues(e)} type="number" name={"quantity"}
+                               value={product.quantity}/>
 
                     </div>
 
                     <div className={"form-group"}>
                         <lable>Description:</lable>
-                        <textarea className={"form-control"} onInput={e=>updateValues(e)} name={"description"} value={product.description} cols={80} rows={5}></textarea>
+                        <textarea className={"form-control"} onInput={e => updateValues(e)} name={"description"}
+                                  value={product.description} cols={80} rows={5}></textarea>
                     </div>
 
+                    <div className={"form-group"}>
+                        <lable>Image:</lable>
+                        <input onChange={e => onSelect(e)} type="file" name={"image"}/>
+                    </div>
+
+                    <div className="progress">
+                        <div className="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                             aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style={{width:amar.progress+'%'}}></div>
+                    </div>
+
+                    <p className={"alert alert-primary text-left"}>
+                        <strong>Upload Speed :</strong>{amar.uploadSpeed}<br/>
+                        <strong>Progress :</strong>{amar.progress.toFixed(0)}<br/>
+                        <strong>Uploaded :</strong>{amar.loaded}<br/>
+                        <strong>Total Size :</strong>{amar.total}<br/>
+                        <strong>RemainingTime :</strong>{amar.remainingTime}<br/>
+                        <strong>Elapsed Time :</strong>{amar.elapsedTime}<br/>
+                    </p>
 
                     <div className={"form-group"}>
                         <button type={"submit"} className={"btn btn-primary"}>Save</button>

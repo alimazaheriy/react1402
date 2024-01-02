@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import * as service from "./dataService";
+import * as service from "./Services/dataService";
 
 export const Product2=()=> {
 
